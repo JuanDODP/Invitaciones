@@ -9,6 +9,8 @@ import { createQrMatrix, SCANNED_TABLE } from '../utils'
 interface QRScannerDemoProps {
   scanned: boolean
   onScannedChange: (scanned: boolean) => void
+  /** Color del fondo detrás del boleto (para las muescas de la perforación). */
+  surface?: string
 }
 
 const QR_SIZE = 25
@@ -20,7 +22,7 @@ const QR_SIZE = 25
  *
  * Con `prefers-reduced-motion`: sin bucle, se muestra el estado ya escaneado.
  */
-export function QRScannerDemo({ scanned, onScannedChange }: QRScannerDemoProps) {
+export function QRScannerDemo({ scanned, onScannedChange, surface = brand.cream }: QRScannerDemoProps) {
   const scope = useRef<HTMLDivElement>(null)
   const frame = useRef<HTMLDivElement>(null)
   const laser = useRef<HTMLDivElement>(null)
@@ -79,7 +81,7 @@ export function QRScannerDemo({ scanned, onScannedChange }: QRScannerDemoProps) 
         {/* Perforación del boleto */}
         <Box aria-hidden="true" sx={{ position: 'relative', height: 0 }}>
           {[-14, 'calc(100% - 14px)'].map((left) => (
-            <Box key={String(left)} sx={{ position: 'absolute', top: -14, left, width: 28, height: 28, borderRadius: '50%', bgcolor: brand.cream }} />
+            <Box key={String(left)} sx={{ position: 'absolute', top: -14, left, width: 28, height: 28, borderRadius: '50%', bgcolor: surface }} />
           ))}
         </Box>
 
@@ -140,9 +142,9 @@ export function QRScannerDemo({ scanned, onScannedChange }: QRScannerDemoProps) 
                 pr: 2.5,
                 py: 1,
                 borderRadius: 99,
-                bgcolor: brand.cassis,
-                color: brand.white,
-                boxShadow: warmShadow.md,
+                bgcolor: brand.white,
+                color: brand.cassis,
+                boxShadow: warmShadow.lg,
               }}
             >
               <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: brand.mint, color: brand.cassis, display: 'grid', placeItems: 'center' }}>
@@ -150,7 +152,7 @@ export function QRScannerDemo({ scanned, onScannedChange }: QRScannerDemoProps) 
               </Box>
               <Box>
                 <Box sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>¡Bienvenido Juan Carlos!</Box>
-                <Box sx={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.75)' }}>Mesa #{SCANNED_TABLE} asignada</Box>
+                <Box sx={{ fontSize: '0.8125rem', color: 'rgba(30,24,34,0.65)' }}>Mesa #{SCANNED_TABLE} asignada</Box>
               </Box>
             </Box>
           )}

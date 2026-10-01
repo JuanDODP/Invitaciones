@@ -54,7 +54,7 @@ export function VenueGrid({ scanned }: VenueGridProps) {
   const shown = shownNumber ? tables[shownNumber - 1] : null
 
   return (
-    <Box sx={{ bgcolor: brand.white, borderRadius: `${radius.cardLarge}px`, boxShadow: warmShadow.md, p: { xs: 2.5, md: 3.5 } }}>
+    <Box sx={{ bgcolor: brand.white, color: brand.cassis, borderRadius: `${radius.cardLarge}px`, boxShadow: warmShadow.md, p: { xs: 2.5, md: 3.5 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.8125rem', fontWeight: 700, color: brandAccessible.mintText }}>

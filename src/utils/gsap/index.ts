@@ -1,6 +1,8 @@
 import { gsap } from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
+import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { SplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
 import { easing } from '@/utils/motion'
 
@@ -9,10 +11,10 @@ import { easing } from '@/utils/motion'
  * de `utils/motion` como eases con nombre, para que las timelines se sientan
  * igual que las transiciones de UI hechas con `motion`.
  *
- * Importar siempre `gsap`, `ScrollTrigger` y `useGSAP` desde aquí, no desde
+ * Importar siempre `gsap`, sus plugins y `useGSAP` desde aquí, no desde
  * los paquetes directamente. `useGSAP` limpia las animaciones al desmontar.
  */
-gsap.registerPlugin(CustomEase, ScrollTrigger, useGSAP)
+gsap.registerPlugin(CustomEase, ScrollTrigger, ScrollSmoother, SplitText, useGSAP)
 
 const toPath = ([x1, y1, x2, y2]: readonly [number, number, number, number]) =>
   `M0,0 C${x1},${y1} ${x2},${y2} 1,1`
@@ -26,4 +28,7 @@ gsap.defaults({ ease: 'ui.out', duration: 0.22 })
 /** Media query para `gsap.matchMedia()`: animar solo si el usuario no pidió menos movimiento. */
 export const motionOk = '(prefers-reduced-motion: no-preference)'
 
-export { gsap, CustomEase, ScrollTrigger, useGSAP }
+/** Puntero preciso (ratón/trackpad): para efectos que no tienen sentido en táctil. */
+export const finePointer = '(pointer: fine) and (prefers-reduced-motion: no-preference)'
+
+export { gsap, CustomEase, ScrollSmoother, ScrollTrigger, SplitText, useGSAP }

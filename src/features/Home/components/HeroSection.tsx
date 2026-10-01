@@ -1,170 +1,27 @@
-import { useRef, useState, type MouseEvent } from 'react'
+import { useId, useRef } from 'react'
 import { Link as RouterLink } from 'react-router'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import QrCode2RoundedIcon from '@mui/icons-material/QrCode2Rounded'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
-import { AnimatePresence, motion } from 'motion/react'
-import { brand, spring } from '@/utils'
-import { gsap, motionOk, useGSAP } from '@/utils/gsap'
+import { motion } from 'motion/react'
+import { brand, fontFamily, spring } from '@/utils'
+import { finePointer, gsap, motionOk, SplitText, useGSAP } from '@/utils/gsap'
 import { usePointerTilt } from '../hooks'
-import { burstFromElement, templates } from '../utils'
+import { HEADER_HEIGHT } from '../utils'
 import { GradientText } from './GradientText'
-import { InvitationCard } from './InvitationCard'
-import { PhoneFrame } from './PhoneFrame'
+import { HeroPhone } from './HeroPhone'
+import { Magnetic } from './Magnetic'
+import { PartyScene } from './PartyScene'
 
-const heroTemplate = templates[0]
-const { colors } = heroTemplate
+const WORD = 'FIESTA'
+/** Letra en la que "entra" la cámara: la I, el trazo más grueso y vertical. */
+const ZOOM_LETTER_INDEX = 1
 
-/** Botón dentro de la invitación: hereda los colores de la plantilla. */
-const InviteButton = motion.button
-
-const inviteButtonSx = {
-  appearance: 'none',
-  border: 0,
-  cursor: 'pointer',
-  font: 'inherit',
-  fontWeight: 700,
-  fontSize: '4.4cqi',
-  minHeight: 44,
-  py: '3.2cqi',
-  borderRadius: 99,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '1.5cqi',
-  '&:focus-visible': { outline: `2px solid ${brand.amber}`, outlineOffset: 2 },
-} as const
-
-function HeroPhone() {
-  const [confirmed, setConfirmed] = useState(false)
-  const [tableOpen, setTableOpen] = useState(false)
-
-  const confirm = (event: MouseEvent<HTMLButtonElement>) => {
-    if (!confirmed) burstFromElement(event.currentTarget, 70)
-    setConfirmed(true)
-  }
-
-  return (
-    <PhoneFrame>
-      <InvitationCard
-        template={heroTemplate}
-        radius={0}
-        actions={
-          <>
-            <Box
-              component={InviteButton}
-              type="button"
-              onClick={confirm}
-              whileTap={{ scale: 0.96 }}
-              animate={{ backgroundColor: confirmed ? brand.mint : colors.accent }}
-              aria-live="polite"
-              sx={{ ...inviteButtonSx, color: brand.cassis }}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.span
-                  key={confirmed ? 'done' : 'idle'}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                >
-                  {confirmed && <CheckRoundedIcon sx={{ fontSize: '1.15em' }} />}
-                  {confirmed ? 'Asistencia confirmada' : 'Confirmar asistencia'}
-                </motion.span>
-              </AnimatePresence>
-            </Box>
-            <Box
-              component={InviteButton}
-              type="button"
-              onClick={() => setTableOpen(true)}
-              whileTap={{ scale: 0.96 }}
-              aria-expanded={tableOpen}
-              sx={{ ...inviteButtonSx, bgcolor: 'rgba(255,255,255,0.14)', color: brand.white, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.3)' }}
-            >
-              Ver mi mesa
-            </Box>
-          </>
-        }
-        overlay={
-          <AnimatePresence>
-            {tableOpen && (
-              <Box
-                component={motion.div}
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={spring.smooth}
-                role="dialog"
-                aria-label="Tu mesa"
-                sx={{
-                  position: 'absolute',
-                  insetInline: 0,
-                  bottom: 0,
-                  zIndex: 2,
-                  bgcolor: brand.cream,
-                  color: brand.cassis,
-                  borderRadius: '7cqi 7cqi 0 0',
-                  p: '7cqi',
-                  display: 'grid',
-                  gap: '3cqi',
-                }}
-              >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <Box>
-                    <Box sx={{ fontSize: '4cqi', color: 'text.secondary', fontWeight: 600 }}>Tu lugar</Box>
-                    <Box sx={{ fontSize: '11cqi', fontWeight: 800, fontFamily: 'Outfit Variable', lineHeight: 1 }}>Mesa 12</Box>
-                  </Box>
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={() => setTableOpen(false)}
-                    aria-label="Cerrar"
-                    sx={{ border: 0, bgcolor: 'rgba(30,24,34,0.06)', borderRadius: 99, width: 36, height: 36, cursor: 'pointer', display: 'grid', placeItems: 'center' }}
-                  >
-                    <CloseRoundedIcon fontSize="small" />
-                  </Box>
-                </Box>
-                <TableDiagram />
-                <Box sx={{ fontSize: '4cqi', color: 'text.secondary' }}>Jardín norte, junto a la pista</Box>
-              </Box>
-            )}
-          </AnimatePresence>
-        }
-      />
-    </PhoneFrame>
-  )
-}
-
-/** Mesa redonda con 8 lugares; el tuyo resaltado. */
-function TableDiagram() {
-  return (
-    <svg viewBox="0 0 120 120" width="100%" style={{ maxHeight: 130 }} aria-hidden="true">
-      <circle cx="60" cy="60" r="26" fill={brand.white} stroke="rgba(30,24,34,0.12)" />
-      <text x="60" y="65" textAnchor="middle" fontSize="14" fontWeight="800" fill={brand.cassis}>12</text>
-      {Array.from({ length: 8 }, (_, i) => {
-        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2
-        const mine = i === 2
-        return (
-          <circle
-            key={i}
-            cx={60 + Math.cos(angle) * 42}
-            cy={60 + Math.sin(angle) * 42}
-            r={mine ? 9 : 7}
-            fill={mine ? brand.coral : 'rgba(30,24,34,0.12)'}
-          />
-        )
-      })}
-    </svg>
-  )
-}
-
-const badgeSx = {
-  position: 'absolute',
-  zIndex: 2,
+const badgeBase = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 1,
@@ -174,179 +31,305 @@ const badgeSx = {
   fontWeight: 700,
   fontSize: '0.875rem',
   whiteSpace: 'nowrap',
-  boxShadow: '0 10px 30px -10px rgba(30,24,34,0.35)',
+  boxShadow: '0 12px 32px -10px rgba(0,0,0,0.5)',
   cursor: 'default',
 } as const
 
 const badges = [
-  {
-    label: '48 confirmados hoy',
-    icon: <CheckRoundedIcon fontSize="small" />,
-    sx: { bgcolor: brand.mint, color: brand.cassis, top: { xs: '-3%', md: '8%' }, left: { xs: '-4%', md: '-34%' } },
-  },
-  {
-    label: 'Plantilla destacada',
-    icon: <StarRoundedIcon fontSize="small" />,
-    sx: { bgcolor: brand.amber, color: brand.cassis, top: '44%', right: { xs: '-8%', md: '-30%' } },
-  },
-  {
-    label: 'Mesa 12 asignada',
-    icon: <QrCode2RoundedIcon fontSize="small" />,
-    sx: { bgcolor: brand.violet, color: brand.white, bottom: { xs: '-3%', md: '34%' }, left: { xs: '-4%', md: '-38%' } },
-  },
+  { label: '48 confirmados hoy', icon: <CheckRoundedIcon fontSize="small" />, bg: brand.mint, color: brand.cassis, position: { top: '8%', left: '-34%' } },
+  { label: 'Plantilla destacada', icon: <StarRoundedIcon fontSize="small" />, bg: brand.amber, color: brand.cassis, position: { top: '44%', right: '-30%' } },
+  { label: 'Mesa 12 asignada', icon: <QrCode2RoundedIcon fontSize="small" />, bg: brand.white, color: brand.violet, position: { bottom: '34%', left: '-38%' } },
 ]
 
-/** Capa decorativa del fondo: serpentinas y chispas con parallax. */
-function HeroBackdrop() {
+function HeroPhoneStage() {
+  const tilt = usePointerTilt(10)
   return (
-    <Box aria-hidden="true" sx={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: -1 }}>
-      <Box sx={{ position: 'absolute', width: 620, height: 620, borderRadius: '50%', top: -200, right: -160, background: `radial-gradient(circle, ${brand.coral}38, transparent 65%)` }} />
-      <Box sx={{ position: 'absolute', width: 560, height: 560, borderRadius: '50%', bottom: -260, left: -200, background: `radial-gradient(circle, ${brand.violet}26, transparent 65%)` }} />
-      <Box data-parallax="0.5" sx={{ position: 'absolute', top: '6%', left: '38%', display: { xs: 'none', md: 'block' } }}>
-        <svg width="90" height="40" viewBox="0 0 90 40"><path d="M2 30 C 15 0, 30 40, 45 14 S 75 30, 88 6" fill="none" stroke={brand.amber} strokeWidth="5" strokeLinecap="round" /></svg>
+    <Box data-hero="phone" sx={{ position: 'relative', perspective: 1200 }}>
+      <Box
+        component={motion.div}
+        {...tilt.handlers}
+        style={{ rotateX: tilt.rotateX, rotateY: tilt.rotateY, transformStyle: 'preserve-3d' }}
+        sx={{ position: 'relative' }}
+      >
+        <HeroPhone />
+        <Box
+          component={motion.div}
+          aria-hidden="true"
+          style={{ background: tilt.glare }}
+          sx={{ position: 'absolute', inset: 0, borderRadius: '48px', pointerEvents: 'none', mixBlendMode: 'soft-light' }}
+        />
       </Box>
-      <Box data-parallax="-0.4" sx={{ position: 'absolute', bottom: '12%', left: '6%' }}>
-        <svg width="70" height="34" viewBox="0 0 70 34"><path d="M2 20 C 14 2, 24 32, 36 14 S 58 22, 68 4" fill="none" stroke={brand.mint} strokeWidth="5" strokeLinecap="round" /></svg>
-      </Box>
-      <Box data-parallax="0.8" sx={{ position: 'absolute', top: '88%', left: '34%', width: 14, height: 14, borderRadius: '50%', bgcolor: brand.coral }} />
-      <Box data-parallax="0.3" sx={{ position: 'absolute', top: '10%', left: '8%', width: 10, height: 22, borderRadius: 4, bgcolor: brand.violet, rotate: '30deg' }} />
+      {badges.map((badge) => (
+        <Box key={badge.label} data-hero="badge" sx={{ position: 'absolute', zIndex: 2, display: { xs: 'none', lg: 'block' }, ...badge.position }}>
+          <Box component={motion.div} whileHover={{ scale: 1.1, rotate: -4 }} transition={spring.snappy} sx={{ ...badgeBase, bgcolor: badge.bg, color: badge.color }}>
+            {badge.icon}
+            {badge.label}
+          </Box>
+        </Box>
+      ))}
     </Box>
   )
 }
 
+/**
+ * Hero con "zoom de máscara" (al estilo del sitio de GTA VI):
+ *
+ * 1. Al cargar: una palabra gigante, FIESTA, recortada en la crema. Por
+ *    dentro de las letras se ve la escena nocturna, viva.
+ * 2. Al hacer scroll (sección fijada): la cámara entra por la "I". La
+ *    palabra crece hasta tragarse la pantalla y la escena llena todo,
+ *    mientras sus capas se acomodan con profundidad.
+ * 3. Dentro de la escena aparecen el titular, los botones y el teléfono.
+ *
+ * Con `prefers-reduced-motion`: sin máscara ni fijado; se ve el paso 3.
+ */
 export function HeroSection() {
   const scope = useRef<HTMLElement>(null)
-  const tilt = usePointerTilt(9)
+  const maskId = useId()
 
-  // Una sola secuencia orquestada de entrada; después, flotación sutil en reposo.
   useGSAP(
     () => {
       const mm = gsap.matchMedia()
+      const root = document.documentElement
+
       mm.add(motionOk, () => {
+        const word = scope.current?.querySelector<SVGTextElement>('[data-intro="word"]')
+        const zoom = scope.current?.querySelector<SVGGElement>('[data-intro="zoom"]')
+        if (!word || !zoom) return
+
+        /**
+         * Centro de la letra de entrada, en coordenadas del SVG (px).
+         * El zoom va en el grupo y la entrada en el texto: animar `scale` en el
+         * mismo elemento haría que una animación pisara a la otra.
+         */
+        const zoomOrigin = () => {
+          const box = word.getExtentOfChar(ZOOM_LETTER_INDEX)
+          return `${box.x + box.width / 2} ${box.y + box.height * 0.55}`
+        }
+
+        const headline = SplitText.create('[data-hero="headline"]', { type: 'lines,words', mask: 'lines' })
+
+        // Entrada al cargar: la palabra se asienta y la escena "sube" detrás.
         gsap
           .timeline({ defaults: { ease: 'expo.out' } })
-          .from('[data-hero="line"]', { yPercent: 110, duration: 1.1, stagger: 0.09 })
-          .from('[data-hero="copy"]', { y: 18, autoAlpha: 0, duration: 0.8, stagger: 0.08 }, 0.35)
-          .from('[data-hero="phone"]', { y: 80, rotate: -5, autoAlpha: 0, duration: 1.3 }, 0.15)
-          .from('[data-hero="badge"]', { scale: 0.3, autoAlpha: 0, duration: 0.7, stagger: 0.1, ease: 'back.out(2.2)' }, 0.8)
+          .from(word, { scale: 0.7, transformOrigin: '50% 50%', opacity: 0, duration: 1.6 })
+          .from('[data-intro="tagline"] > *', { y: 24, autoAlpha: 0, stagger: 0.1, duration: 1 }, 0.3)
+          .from('[data-intro="scene"]', { autoAlpha: 0, duration: 1.4 }, 0)
 
-        gsap.to('[data-hero="float"]', { y: -12, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 })
-        gsap.utils.toArray<SVGElement>('.float-piece').forEach((piece) => {
-          gsap.to(piece, {
-            x: gsap.utils.random(-2.5, 2.5),
-            y: gsap.utils.random(-3.5, 3.5),
-            rotation: gsap.utils.random(-25, 25),
-            transformOrigin: '50% 50%',
-            duration: gsap.utils.random(2.4, 4.2),
-            ease: 'sine.inOut',
-            yoyo: true,
-            repeat: -1,
-          })
+        // Escena fijada y controlada por el scroll.
+        const isMobile = window.matchMedia('(max-width: 899px)').matches
+        const tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: scope.current,
+            start: 'top top',
+            end: isMobile ? '+=190%' : '+=260%',
+            scrub: 1,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              root.dataset.headerTone = self.progress > 0.32 && self.progress < 1 ? 'night' : 'day'
+            },
+            onLeave: () => {
+              root.dataset.headerTone = 'day'
+            },
+          },
         })
+
+        tl.to('[data-intro="tagline"]', { autoAlpha: 0, y: -40, duration: 0.12 }, 0)
+          .to(zoom, { scale: 70, svgOrigin: () => zoomOrigin(), ease: 'power3.in', duration: 0.5 }, 0)
+          .to('[data-intro="overlay"]', { autoAlpha: 0, duration: 0.1 }, 0.42)
+          .fromTo('[data-intro="scene"]', { scale: 1.35 }, { scale: 1, ease: 'power2.out', duration: 0.6 }, 0)
+          .to('[data-depth="0.15"]', { yPercent: -4, duration: 1 }, 0)
+          .to('[data-depth="0.45"]', { yPercent: -10, duration: 1 }, 0)
+          .to('[data-depth="1"]', { yPercent: -22, duration: 1 }, 0)
+          .from(headline.words, { yPercent: 120, rotate: 8, stagger: 0.025, duration: 0.25, ease: 'power3.out' }, 0.5)
+          .from('[data-hero="copy"]', { y: 40, autoAlpha: 0, stagger: 0.05, duration: 0.2, ease: 'power3.out' }, 0.64)
+          .from('[data-hero="phone"]', { y: '70vh', rotate: -14, scale: 0.8, duration: 0.35, ease: 'power3.out' }, 0.55)
+          .from('[data-hero="badge"]', { scale: 0, autoAlpha: 0, stagger: 0.04, duration: 0.12, ease: 'back.out(2.5)' }, 0.82)
+          .to({}, { duration: 0.12 })
       })
+
+      // Profundidad con el puntero: cada capa se desplaza según su `data-depth`.
+      mm.add(finePointer, () => {
+        const stage = scope.current
+        if (!stage) return
+        const movers = gsap.utils.toArray<HTMLElement>('[data-depth]').map((layer) => {
+          const depth = Number(layer.dataset.depth)
+          return {
+            depth,
+            x: gsap.quickTo(layer, 'x', { duration: 1.2, ease: 'power3.out' }),
+            y: gsap.quickTo(layer, 'y', { duration: 1.2, ease: 'power3.out' }),
+          }
+        })
+        const onMove = (event: PointerEvent) => {
+          const dx = event.clientX / window.innerWidth - 0.5
+          const dy = event.clientY / window.innerHeight - 0.5
+          movers.forEach((mover) => {
+            mover.x(-dx * 60 * mover.depth)
+            mover.y(-dy * 40 * mover.depth)
+          })
+        }
+        stage.addEventListener('pointermove', onMove)
+        return () => stage.removeEventListener('pointermove', onMove)
+      })
+
+      return () => {
+        delete root.dataset.headerTone
+      }
     },
     { scope },
   )
 
   return (
-    <Box
-      component="section"
-      ref={scope}
-      aria-labelledby="hero-title"
-      sx={{ position: 'relative', isolation: 'isolate', overflow: 'hidden' }}
-    >
-      <HeroBackdrop />
-      <Box
-        sx={{
-          maxWidth: 1200,
-          mx: 'auto',
-          px: { xs: 2, md: 4 },
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 10, md: 14 },
-          display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' },
-          alignItems: 'center',
-          gap: { xs: 8, md: 6 },
-        }}
-      >
-        <Box>
-          <Typography
-            id="hero-title"
-            variant="h1"
-            sx={{ fontSize: 'clamp(2.5rem, 5.6vw, 4.75rem)', mb: 3 }}
-          >
-            {[
-              <>Invitaciones que</>,
-              <GradientText>emocionan.</GradientText>,
-              <>Organización que</>,
-              <>hace <GradientText>sonreír.</GradientText></>,
-            ].map((line, i) => (
-              <Box key={i} component="span" sx={{ display: 'block', overflow: 'hidden', pb: '0.08em', mb: '-0.08em' }}>
-                <Box component="span" data-hero="line" sx={{ display: 'block' }}>
-                  {line}
-                </Box>
-              </Box>
-            ))}
-          </Typography>
+    <Box component="section" ref={scope} aria-labelledby="hero-title" sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'relative', height: '100svh', minHeight: 560, overflow: 'hidden', bgcolor: brand.cassis, color: brand.white }}>
+        <Box data-intro="scene" sx={{ position: 'absolute', inset: 0 }}>
+          <PartyScene />
+        </Box>
 
-          <Typography
-            data-hero="copy"
-            sx={{ fontSize: { xs: '1.0625rem', md: '1.1875rem' }, color: 'text.secondary', maxWidth: '34em', mb: 4.5, lineHeight: 1.6 }}
-          >
-            Crea una invitación animada en minutos, compártela por WhatsApp y recibe a cada invitado con un pase QR que
-            ya sabe cuál es su mesa.
-          </Typography>
-
-          <Box data-hero="copy" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-            <Button component={RouterLink} to="/editor" variant="contained" size="large">
-              Diseñar mi invitación gratis
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/dashboard"
-              variant="outlined"
-              color="tertiary"
-              size="large"
-              sx={{ borderWidth: 1.5, bgcolor: 'rgba(121,40,202,0.04)', '&:hover': { borderWidth: 1.5, bgcolor: 'rgba(121,40,202,0.08)' } }}
+        {/* Contenido del hero, dentro de la escena */}
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 2,
+            height: '100%',
+            maxWidth: 1200,
+            mx: 'auto',
+            px: { xs: 2, md: 4 },
+            pt: `${HEADER_HEIGHT + 16}px`,
+            pb: { xs: 0, md: 3 },
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) auto' },
+            alignItems: { xs: 'start', md: 'center' },
+            gap: { md: 6 },
+          }}
+        >
+          <Box sx={{ pt: { xs: 3, sm: 'clamp(32px, 7svh, 80px)', md: 0 } }}>
+            <Typography
+              id="hero-title"
+              variant="h1"
+              data-hero="headline"
+              sx={{ fontSize: 'clamp(2.4rem, 6.2vw, 5.4rem)', mb: { xs: 2, md: 3 }, color: brand.white, textShadow: '0 4px 24px rgba(30,24,34,0.45)' }}
             >
-              Ver demostración para salones
-            </Button>
+              Invitaciones que <GradientText tone="night">emocionan.</GradientText>
+              <br />
+              Organización que hace <GradientText tone="night">sonreír.</GradientText>
+            </Typography>
+            <Typography
+              data-hero="copy"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.1875rem' },
+                color: 'rgba(255,255,255,0.86)',
+                // Legible aunque pase un globo por detrás.
+                textShadow: '0 1px 2px rgba(30,24,34,0.8), 0 2px 16px rgba(30,24,34,0.7)',
+                maxWidth: '32em',
+                mb: { xs: 3, md: 4.5 },
+                lineHeight: 1.6,
+                '@media (max-height: 700px) and (max-width: 899px)': { display: 'none' },
+              }}
+            >
+              Crea una invitación animada en minutos, compártela por WhatsApp y recibe a cada invitado con un pase QR que
+              ya sabe cuál es su mesa.
+            </Typography>
+            <Box data-hero="copy" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+              <Magnetic>
+                <Button component={RouterLink} to="/editor" variant="contained" size="large">
+                  Diseñar mi invitación gratis
+                </Button>
+              </Magnetic>
+              <Magnetic>
+                <Button
+                  component={RouterLink}
+                  to="/dashboard"
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    color: brand.white,
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    borderWidth: 1.5,
+                    backdropFilter: 'blur(8px)',
+                    bgcolor: 'rgba(255,255,255,0.06)',
+                    '&:hover': { borderColor: brand.white, borderWidth: 1.5, bgcolor: 'rgba(255,255,255,0.14)' },
+                  }}
+                >
+                  Ver demostración para salones
+                </Button>
+              </Magnetic>
+            </Box>
+          </Box>
+
+          {/* Escritorio: columna derecha. Móvil: el teléfono asoma desde abajo. */}
+          <Box
+            sx={{
+              width: { xs: 'min(290px, 68vw)', sm: 'min(340px, 46vw)', md: 'min(330px, calc((100svh - 150px) / 1.9))' },
+              position: { xs: 'absolute', md: 'relative' },
+              left: { xs: '50%', md: 'auto' },
+              translate: { xs: '-50% 0', md: 'none' },
+              bottom: { xs: 'calc(min(290px, 68vw) * -0.95)', sm: 'calc(min(340px, 46vw) * -0.8)', md: 'auto' },
+            }}
+          >
+            <HeroPhoneStage />
           </Box>
         </Box>
 
-        <Box sx={{ position: 'relative', width: 'min(100%, 340px)', mx: 'auto', perspective: 1200 }}>
-          <Box data-hero="phone">
-            <Box data-hero="float">
-              <Box
-                component={motion.div}
-                {...tilt.handlers}
-                style={{ rotateX: tilt.rotateX, rotateY: tilt.rotateY, transformStyle: 'preserve-3d' }}
-                sx={{ position: 'relative' }}
-              >
-                <HeroPhone />
-                <Box
-                  component={motion.div}
-                  aria-hidden="true"
-                  style={{ background: tilt.glare }}
-                  sx={{ position: 'absolute', inset: 0, borderRadius: '48px', pointerEvents: 'none', mixBlendMode: 'soft-light' }}
-                />
-              </Box>
+        {/* Máscara: la crema con la palabra recortada encima de todo */}
+        <Box
+          data-intro="overlay"
+          sx={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none', '@media (prefers-reduced-motion: reduce)': { display: 'none' } }}
+        >
+          <svg width="100%" height="100%" aria-hidden="true" style={{ display: 'block' }}>
+            <defs>
+              <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+                <rect width="100%" height="100%" fill="white" />
+                <g data-intro="zoom">
+                  <text
+                    data-intro="word"
+                    x="50%"
+                    y="52%"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="black"
+                    style={{ fontFamily: fontFamily.display, fontWeight: 800, fontSize: 'min(26vw, 48svh)', letterSpacing: '-0.04em' }}
+                  >
+                    {WORD}
+                  </text>
+                </g>
+              </mask>
+            </defs>
+            <rect width="100%" height="100%" fill={brand.cream} mask={`url(#${maskId})`} />
+          </svg>
+
+          <Box
+            data-intro="tagline"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              color: brand.cassis,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              pt: `${HEADER_HEIGHT + 32}px`,
+              pb: 4,
+              px: 2,
+              textAlign: 'center',
+            }}
+          >
+            <Box sx={{ fontFamily: fontFamily.display, fontWeight: 600, fontSize: { xs: '1.125rem', md: '1.5rem' }, letterSpacing: '-0.01em' }}>
+              Invitaciones interactivas y control de eventos con QR
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, fontWeight: 600, fontSize: '0.9375rem', color: 'text.secondary' }}>
+              Desliza para entrar a la fiesta
+              <KeyboardArrowDownRoundedIcon
+                sx={{
+                  animation: 'hero-cue 1.6s ease-in-out infinite',
+                  '@keyframes hero-cue': { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(8px)' } },
+                }}
+              />
             </Box>
           </Box>
-
-          {badges.map((badge) => (
-            <Box key={badge.label} data-hero="badge" sx={{ ...badgeSx, ...badge.sx, p: 0, bgcolor: 'transparent', boxShadow: 'none' }}>
-              <Box
-                component={motion.div}
-                whileHover={{ scale: 1.08, rotate: -3 }}
-                transition={spring.snappy}
-                sx={{ ...badgeSx, position: 'static', bgcolor: badge.sx.bgcolor, color: badge.sx.color }}
-              >
-                {badge.icon}
-                {badge.label}
-              </Box>
-            </Box>
-          ))}
         </Box>
       </Box>
     </Box>

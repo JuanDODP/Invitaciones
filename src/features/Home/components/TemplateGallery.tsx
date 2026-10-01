@@ -4,139 +4,171 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { motion } from 'motion/react'
 import { brand, fontFamily, spring } from '@/utils'
 import { gsap, motionOk, useGSAP } from '@/utils/gsap'
 import { galleryTemplates, type InvitationTemplate } from '../utils'
 import { InvitationCard } from './InvitationCard'
-import { SectionHeading } from './SectionHeading'
-
-// Dos filas con distinto orden para que no se vean idénticas al cruzarse.
-const rows = [
-  [...galleryTemplates.slice(0, 4), ...galleryTemplates.slice(4, 6)],
-  [...galleryTemplates.slice(4), ...galleryTemplates.slice(0, 2)],
-]
 
 interface GalleryCardProps {
   template: InvitationTemplate
-  /** Copia para el bucle infinito: invisible para lectores de pantalla y teclado. */
-  clone?: boolean
   onOpen: (template: InvitationTemplate) => void
 }
 
-function GalleryCard({ template, clone = false, onOpen }: GalleryCardProps) {
+function GalleryCard({ template, onOpen }: GalleryCardProps) {
   return (
-    <Box
-      component={motion.button}
-      type="button"
-      onClick={() => onOpen(template)}
-      whileHover={{ y: -10 }}
-      whileTap={{ scale: 0.97 }}
-      transition={spring.snappy}
-      aria-hidden={clone || undefined}
-      tabIndex={clone ? -1 : undefined}
-      aria-label={clone ? undefined : `Vista previa: ${template.name}, ${template.category}`}
-      sx={{
-        flexShrink: 0,
-        width: { xs: 180, md: 220 },
-        p: 0,
-        border: 0,
-        bgcolor: 'transparent',
-        borderRadius: '24px',
-        cursor: 'pointer',
-        textAlign: 'left',
-        font: 'inherit',
-        color: 'inherit',
-        // Iluminación perimetral al pasar el cursor.
-        '& .gallery-card': { transition: 'box-shadow 300ms' },
-        '@media (hover: hover)': {
-          '&:hover .gallery-card': {
-            boxShadow: `0 0 0 2px ${brand.coral}, 0 28px 56px -18px ${brand.coral}, 0 12px 40px -20px ${brand.violet}`,
+    <Box data-gallery-card sx={{ flexShrink: 0, width: 'clamp(210px, 23vw, 310px)', transformStyle: 'preserve-3d' }}>
+      <Box
+        component={motion.button}
+        type="button"
+        onClick={() => onOpen(template)}
+        whileHover={{ y: -12, scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        transition={spring.snappy}
+        aria-label={`Vista previa: ${template.name}, ${template.category}`}
+        sx={{
+          display: 'block',
+          width: '100%',
+          p: 0,
+          border: 0,
+          bgcolor: 'transparent',
+          borderRadius: '24px',
+          cursor: 'pointer',
+          textAlign: 'left',
+          font: 'inherit',
+          color: 'inherit',
+          // Iluminación perimetral al pasar el cursor.
+          '& .gallery-card': { transition: 'box-shadow 300ms' },
+          '@media (hover: hover)': {
+            '&:hover .gallery-card': {
+              boxShadow: `0 0 0 2px ${brand.coral}, 0 30px 60px -18px ${brand.coral}, 0 14px 44px -20px ${brand.violet}`,
+            },
           },
-        },
-        '&:focus-visible': { outline: `2px solid ${brand.violet}`, outlineOffset: 4 },
-      }}
-    >
-      <Box className="gallery-card" sx={{ borderRadius: '24px', boxShadow: '0 12px 32px -16px rgba(30,24,34,0.35)' }}>
-        <InvitationCard template={template} aspectRatio="3 / 4" />
-      </Box>
-      <Box sx={{ mt: 1.5, px: 0.5 }}>
-        <Box sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>{template.name}</Box>
-        <Box sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>{template.category}</Box>
+          '&:focus-visible': { outline: `2px solid ${brand.violet}`, outlineOffset: 4 },
+        }}
+      >
+        <Box className="gallery-card" sx={{ borderRadius: '24px', boxShadow: '0 18px 40px -18px rgba(30,24,34,0.45)' }}>
+          <InvitationCard template={template} aspectRatio="3 / 4" />
+        </Box>
+        <Box sx={{ mt: 1.5, px: 0.5 }}>
+          <Box sx={{ fontWeight: 700, fontSize: '1rem' }}>{template.name}</Box>
+          <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{template.category}</Box>
+        </Box>
       </Box>
     </Box>
   )
 }
 
+/**
+ * Galería en "carrusel de scroll": la sección se fija y el scroll vertical
+ * mueve la fila de plantillas en horizontal. Cada tarjeta gira en 3D al
+ * entrar y salir, y queda de frente al pasar por el centro.
+ *
+ * Con `prefers-reduced-motion`: fila con desplazamiento horizontal nativo.
+ */
 export function TemplateGallery() {
-  const scope = useRef<HTMLDivElement>(null)
+  const scope = useRef<HTMLElement>(null)
   const [preview, setPreview] = useState<InvitationTemplate | null>(null)
 
-  // Marquesina infinita: cada fila contiene sus tarjetas dos veces y se
-  // desplaza la mitad de su ancho. Al pasar el cursor, frena hasta detenerse.
-  const { contextSafe } = useGSAP(
+  useGSAP(
     () => {
       const mm = gsap.matchMedia()
       mm.add(motionOk, () => {
-        gsap.utils.toArray<HTMLElement>('[data-marquee]').forEach((track, index) => {
-          const reverse = index % 2 === 1
-          gsap.fromTo(
-            track,
-            { xPercent: reverse ? -50 : 0 },
-            { xPercent: reverse ? 0 : -50, duration: 48, ease: 'none', repeat: -1 },
-          )
+        const track = scope.current?.querySelector<HTMLElement>('[data-gallery-track]')
+        if (!track) return
+        const distance = () => Math.max(0, track.scrollWidth - window.innerWidth)
+
+        const slide = gsap.to(track, {
+          x: () => -distance(),
+          ease: 'none',
+          scrollTrigger: {
+            trigger: scope.current,
+            start: 'top top',
+            end: () => `+=${distance()}`,
+            scrub: 1,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
         })
+
+        gsap.utils.toArray<HTMLElement>('[data-gallery-card]').forEach((card) => {
+          gsap
+            .timeline({
+              scrollTrigger: { trigger: card, containerAnimation: slide, start: 'left right', end: 'right left', scrub: true },
+            })
+            .fromTo(card, { rotateY: -38, rotateZ: 5, z: -220, opacity: 0.4 }, { rotateY: 0, rotateZ: 0, z: 0, opacity: 1, ease: 'power2.out' })
+            .to(card, { rotateY: 38, rotateZ: -5, z: -220, opacity: 0.4, ease: 'power2.in' })
+        })
+
+        gsap.fromTo('[data-gallery-progress]', { scaleX: 0 }, { scaleX: 1, ease: 'none', scrollTrigger: { trigger: scope.current, start: 'top top', end: () => `+=${distance()}`, scrub: true } })
       })
     },
     { scope },
   )
 
-  // Frena/reanuda la marquesina de la fila que contiene el puntero o el foco.
-  const setSpeed = contextSafe((row: HTMLElement, timeScale: number) => {
-    const track = row.querySelector('[data-marquee]')
-    const [tween] = track ? gsap.getTweensOf(track) : []
-    if (tween) gsap.to(tween, { timeScale, duration: 0.6, ease: 'ui.out', overwrite: true })
-  })
-
   return (
-    <Box component="section" id="plantillas" aria-labelledby="plantillas-title" sx={{ py: { xs: 10, md: 16 }, overflow: 'hidden' }}>
-      <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 4 } }}>
-        <SectionHeading
-          id="plantillas-title"
-          title="Plantillas vivas para cada celebración"
-          lede="Bodas, cumpleaños, XV años y festivales. Abre cualquiera para verla de cerca y empieza desde ahí."
-        />
+    <Box
+      component="section"
+      ref={scope}
+      id="plantillas"
+      aria-labelledby="plantillas-title"
+      sx={{ position: 'relative', minHeight: '100svh', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', py: { xs: 10, md: 6 } }}
+    >
+      <Box
+        data-gallery-track
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: { xs: 3, md: 5 },
+          width: 'max-content',
+          pl: { xs: 2, md: 'max(32px, calc((100vw - 1136px) / 2))' },
+          pr: { xs: 4, md: '12vw' },
+          perspective: 1400,
+          '@media (prefers-reduced-motion: reduce)': { width: 'auto', overflowX: 'auto', pb: 2 },
+        }}
+      >
+        <Box sx={{ flexShrink: 0, width: { xs: '78vw', md: 'min(460px, 36vw)' }, pr: { md: 4 } }}>
+          <Typography id="plantillas-title" variant="h2" data-split sx={{ fontSize: 'clamp(2.1rem, 5vw, 4rem)', mb: 2.5 }}>
+            Plantillas vivas para cada celebración
+          </Typography>
+          <Typography data-reveal sx={{ fontSize: { xs: '1.0625rem', md: '1.1875rem' }, color: 'text.secondary', lineHeight: 1.6 }}>
+            Bodas, cumpleaños, XV años y festivales. Sigue bajando para recorrerlas y abre cualquiera para verla de cerca.
+          </Typography>
+        </Box>
+
+        {galleryTemplates.map((template) => (
+          <GalleryCard key={template.id} template={template} onOpen={setPreview} />
+        ))}
+
+        <Box
+          sx={{
+            flexShrink: 0,
+            width: 'clamp(240px, 26vw, 340px)',
+            aspectRatio: '3 / 4',
+            borderRadius: '24px',
+            border: `2px dashed rgba(121,40,202,0.4)`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            gap: 2,
+            p: 3,
+          }}
+        >
+          <Box sx={{ fontFamily: fontFamily.display, fontWeight: 700, fontSize: '1.5rem', lineHeight: 1.2 }}>¿No encuentras la tuya?</Box>
+          <Box sx={{ color: 'text.secondary' }}>Empieza desde cero en el editor.</Box>
+          <Button component={RouterLink} to="/editor" variant="contained">
+            Crear desde cero
+          </Button>
+        </Box>
       </Box>
 
-      <Box ref={scope} data-reveal sx={{ display: 'grid', gap: { xs: 3, md: 4 } }}>
-        {rows.map((row, index) => (
-          <Box
-            key={index}
-            onPointerEnter={(event) => setSpeed(event.currentTarget, 0)}
-            onPointerLeave={(event) => setSpeed(event.currentTarget, 1)}
-            onFocus={(event) => setSpeed(event.currentTarget, 0)}
-            onBlur={(event) => setSpeed(event.currentTarget, 1)}
-            sx={{
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              '&::-webkit-scrollbar': { display: 'none' },
-              // Con movimiento activo, la fila se mueve sola; sin él, se desplaza a mano.
-              '@media (prefers-reduced-motion: no-preference)': { overflowX: 'visible' },
-              py: 1.5,
-            }}
-          >
-            <Box data-marquee sx={{ display: 'flex', width: 'max-content', willChange: 'transform' }}>
-              {[false, true].map((clone) => (
-                <Box key={String(clone)} sx={{ display: 'flex', gap: { xs: 2, md: 3 }, pr: { xs: 2, md: 3 } }}>
-                  {row.map((template) => (
-                    <GalleryCard key={template.id} template={template} clone={clone} onOpen={setPreview} />
-                  ))}
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        ))}
+      <Box sx={{ mt: { xs: 4, md: 5 }, mx: 'auto', width: 'min(1136px, calc(100% - 32px))', height: 4, borderRadius: 9, bgcolor: 'rgba(30,24,34,0.08)', overflow: 'hidden' }} aria-hidden="true">
+        <Box data-gallery-progress sx={{ height: '100%', transformOrigin: 'left', background: `linear-gradient(90deg, ${brand.coral}, ${brand.violet})` }} />
       </Box>
 
       <Dialog
