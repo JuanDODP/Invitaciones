@@ -6,13 +6,15 @@ interface MagneticProps {
   children: ReactNode
   /** Cuánto se deja atraer (0–1) hacia el puntero. */
   strength?: number
+  /** En móvil ocupa todo el ancho (para botones apilados). */
+  block?: boolean
 }
 
 /**
  * Envoltura "magnética": el contenido se inclina hacia el cursor cuando
  * éste se acerca y vuelve con un rebote al salir. Solo con ratón.
  */
-export function Magnetic({ children, strength = 0.35 }: MagneticProps) {
+export function Magnetic({ children, strength = 0.35, block = false }: MagneticProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useGSAP(
@@ -45,7 +47,7 @@ export function Magnetic({ children, strength = 0.35 }: MagneticProps) {
   )
 
   return (
-    <Box ref={ref} sx={{ display: 'inline-block', p: 1.5, m: -1.5 }}>
+    <Box ref={ref} sx={{ display: block ? { xs: 'block', sm: 'inline-block' } : 'inline-block', p: 1.5, m: -1.5 }}>
       {children}
     </Box>
   )

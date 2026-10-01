@@ -211,7 +211,7 @@ export function HeroSection() {
               id="hero-title"
               variant="h1"
               data-hero="headline"
-              sx={{ fontSize: 'clamp(2.4rem, 6.2vw, 5.4rem)', mb: { xs: 2, md: 3 }, color: brand.white, textShadow: '0 4px 24px rgba(30,24,34,0.45)' }}
+              sx={{ fontSize: { xs: 'clamp(1.9rem, 10vw, 2.6rem)', sm: 'clamp(2.4rem, 6.2vw, 5.4rem)' }, mb: { xs: 2, md: 3 }, color: brand.white, textShadow: '0 4px 24px rgba(30,24,34,0.45)' }}
             >
               Invitaciones que <GradientText tone="night">emocionan.</GradientText>
               <br />
@@ -233,19 +233,20 @@ export function HeroSection() {
               Crea una invitación animada en minutos, compártela por WhatsApp y recibe a cada invitado con un pase QR que
               ya sabe cuál es su mesa.
             </Typography>
-            <Box data-hero="copy" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-              <Magnetic>
-                <Button component={RouterLink} to="/editor" variant="contained" size="large">
+            <Box data-hero="copy" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', gap: 1.5 }}>
+              <Magnetic block>
+                <Button component={RouterLink} to="/editor" variant="contained" size="large" sx={{ width: { xs: '100%', sm: 'auto' } }}>
                   Diseñar mi invitación gratis
                 </Button>
               </Magnetic>
-              <Magnetic>
+              <Magnetic block>
                 <Button
                   component={RouterLink}
                   to="/dashboard"
                   variant="outlined"
                   size="large"
                   sx={{
+                    width: { xs: '100%', sm: 'auto' },
                     color: brand.white,
                     borderColor: 'rgba(255,255,255,0.5)',
                     borderWidth: 1.5,
@@ -268,6 +269,8 @@ export function HeroSection() {
               left: { xs: '50%', md: 'auto' },
               translate: { xs: '-50% 0', md: 'none' },
               bottom: { xs: 'calc(min(290px, 68vw) * -0.95)', sm: 'calc(min(340px, 46vw) * -0.8)', md: 'auto' },
+              // Teléfonos bajos (p. ej. 320×568): asoma menos para no tapar los botones.
+              '@media (max-width: 599px) and (max-height: 740px)': { bottom: 'calc(min(290px, 68vw) * -1.35)' },
             }}
           >
             <HeroPhoneStage />

@@ -238,7 +238,7 @@ export function RoleTabs() {
                       component={motion.span}
                       layoutId="role-tab-indicator"
                       transition={spring.snappy}
-                      sx={{ position: 'absolute', inset: 0, borderRadius: 99, bgcolor: item.color }}
+                      sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 99, bgcolor: item.color }}
                     />
                   )}
                   <Box component="span" sx={{ position: 'relative' }}>

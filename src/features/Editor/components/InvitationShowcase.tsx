@@ -28,7 +28,8 @@ export function InvitationShowcase({ templateId, replayKey }: InvitationShowcase
         aria-hidden="true"
         animate={{ background: `radial-gradient(closest-side, ${meta.glow}, transparent)` }}
         transition={{ duration: 0.8 }}
-        sx={{ position: 'absolute', inset: '-18%', zIndex: 0, filter: 'blur(20px)', animation: 'showcase-breathe 5s ease-in-out infinite', '@keyframes showcase-breathe': { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.08)' } } }}
+        // pointer-events: none — el halo sobresale 18% y en móvil quedaba encima del selector de plantillas.
+        sx={{ position: 'absolute', inset: '-18%', zIndex: 0, pointerEvents: 'none', filter: 'blur(20px)', animation: 'showcase-breathe 5s ease-in-out infinite', '@keyframes showcase-breathe': { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.08)' } } }}
       />
 
       <Box

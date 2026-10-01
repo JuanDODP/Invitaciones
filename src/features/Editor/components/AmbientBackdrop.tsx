@@ -19,7 +19,7 @@ const particles = Array.from({ length: 18 }, (_, i) => ({
 export function AmbientBackdrop({ templateId }: { templateId: TemplateId }) {
   const meta = templateMeta[templateId]
   return (
-    <Box aria-hidden="true" sx={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', '@keyframes ambient-float': { '0%, 100%': { transform: 'translateY(0) scale(1)' }, '50%': { transform: 'translateY(-40px) scale(1.15)' } } }}>
+    <Box aria-hidden="true" sx={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none', '@keyframes ambient-float': { '0%, 100%': { transform: 'translateY(0) scale(1)' }, '50%': { transform: 'translateY(-40px) scale(1.15)' } } }}>
       <AnimatePresence initial={false}>
         <Box
           key={templateId}

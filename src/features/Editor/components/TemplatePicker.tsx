@@ -84,7 +84,7 @@ export function TemplatePicker({ value, onChange, dark }: TemplatePickerProps) {
                 component={motion.span}
                 layoutId="template-picker-highlight"
                 transition={spring.snappy}
-                sx={{ position: 'absolute', inset: 0, borderRadius: '20px', bgcolor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.85)', boxShadow: dark ? 'inset 0 0 0 1px rgba(255,255,255,0.15)' : '0 8px 24px -12px rgba(30,24,34,0.3)' }}
+                sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: '20px', bgcolor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.85)', boxShadow: dark ? 'inset 0 0 0 1px rgba(255,255,255,0.15)' : '0 8px 24px -12px rgba(30,24,34,0.3)' }}
               />
             )}
             <Box

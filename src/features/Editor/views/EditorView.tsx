@@ -6,7 +6,8 @@ import Typography from '@mui/material/Typography'
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
 import { motion } from 'motion/react'
 import { gsap, motionOk, SplitText, useGSAP } from '@/utils/gsap'
-import { AmbientBackdrop, DownloadButton, EditorTopBar, InvitationShowcase, TemplateDetails, TemplatePicker } from '../components'
+import { TopBar } from '@/components'
+import { AmbientBackdrop, DownloadButton, InvitationShowcase, TemplateDetails, TemplatePicker } from '../components'
 import { useInvitationPdf } from '../hooks'
 import { templateMeta, templateOrder, type TemplateId } from '../utils'
 
@@ -51,7 +52,7 @@ export function EditorView() {
       sx={{ position: 'relative', minHeight: '100svh', overflowX: 'clip' }}
     >
       <AmbientBackdrop templateId={templateId} />
-      <EditorTopBar dark={dark} />
+      <TopBar dark={dark} />
 
       <Box
         component="main"

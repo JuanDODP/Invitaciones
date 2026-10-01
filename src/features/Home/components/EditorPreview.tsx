@@ -93,7 +93,7 @@ function TemplateRail({ selectedId, onSelect }: { selectedId: string; onSelect: 
                 component={motion.span}
                 layoutId="template-selection"
                 transition={spring.snappy}
-                sx={{ position: 'absolute', inset: 0, borderRadius: '18px', bgcolor: brand.white, boxShadow: warmShadow.sm }}
+                sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: '18px', bgcolor: brand.white, boxShadow: warmShadow.sm }}
               />
             )}
             <Box
