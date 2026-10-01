@@ -1,4 +1,5 @@
 export * from './AppThemeProvider'
+export * from './BrandMark'
 export * from './PageTransition'
 export * from './RootLayout'
 export * from './RouteError'

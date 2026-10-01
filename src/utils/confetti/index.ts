@@ -13,7 +13,7 @@ interface Particle {
   life: number
 }
 
-const colors = [brand.coral, brand.amber, brand.violet, brand.mint, '#FF8FA3']
+const defaultColors = [brand.coral, brand.amber, brand.violet, brand.mint, '#FF8FA3']
 const GRAVITY = 0.32
 const DRAG = 0.985
 const LIFETIME = 140
@@ -21,9 +21,10 @@ const LIFETIME = 140
 /**
  * Ráfaga de confetti en un canvas temporal a pantalla completa.
  * Sin dependencias; el canvas se elimina al terminar. Respeta
- * `prefers-reduced-motion` (no se dispara).
+ * `prefers-reduced-motion` (no se dispara). `colors` permite usar la paleta
+ * de cada invitación en lugar de la de la marca.
  */
-export function burstConfetti(origin: { x: number; y: number }, count = 140): void {
+export function burstConfetti(origin: { x: number; y: number }, count = 140, colors: readonly string[] = defaultColors): void {
   if (typeof window === 'undefined') return
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
@@ -107,7 +108,7 @@ export function burstConfetti(origin: { x: number; y: number }, count = 140): vo
 }
 
 /** Dispara confetti desde el centro de un elemento (p. ej. el botón pulsado). */
-export function burstFromElement(element: Element, count?: number): void {
+export function burstFromElement(element: Element, count?: number, colors?: readonly string[]): void {
   const rect = element.getBoundingClientRect()
-  burstConfetti({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }, count)
+  burstConfetti({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }, count, colors)
 }

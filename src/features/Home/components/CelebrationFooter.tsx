@@ -4,11 +4,11 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Link from '@mui/material/Link'
 import Typography from '@mui/material/Typography'
-import { brand, brandAccessible } from '@/utils'
+import { BrandMark } from '@/components'
+import { brand, brandAccessible, burstConfetti, burstFromElement } from '@/utils'
 import { gsap, motionOk, ScrollTrigger, SplitText, useGSAP } from '@/utils/gsap'
-import { burstConfetti, burstFromElement, scrollToSection } from '../utils'
+import { scrollToSection } from '../utils'
 import { Magnetic } from './Magnetic'
-import { BrandMark } from './SiteHeader'
 
 const footerLinks = [
   { label: 'Creador', href: '#creador' },
