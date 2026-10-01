@@ -14,6 +14,7 @@ import {
   TemplateGallery,
   Testimonials,
   VelocityMarquee,
+  VenuesShowcase,
 } from '../components'
 import { useHomeAnimations } from '../hooks'
 import { HEADER_HEIGHT, SMOOTH_CONTENT_ID, SMOOTH_WRAPPER_ID } from '../utils'
@@ -52,6 +53,7 @@ export function HomeView() {
           <EditorPreview />
           <LogisticsSection />
           <RoleTabs />
+          <VenuesShowcase />
           <TemplateGallery />
           <Testimonials />
           <CelebrationFooter />

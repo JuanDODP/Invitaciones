@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import { createBrowserRouter } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
-import { AppThemeProvider, RootLayout } from '@/components'
+import { AppThemeProvider, RootLayout, RouteError } from '@/components'
 import { loadHomePage } from '@/features/Home'
 import { loadEditorPage } from '@/features/Editor'
 import { loadDashboardAdminPage } from '@/features/DashboardAdmin'
@@ -16,6 +16,7 @@ const EventManagementPage = lazy(loadEventManagementPage)
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <HomePage /> },
       { path: 'editor', element: <EditorPage /> },

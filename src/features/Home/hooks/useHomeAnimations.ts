@@ -24,8 +24,12 @@ export function useHomeAnimations(scope: RefObject<HTMLElement | null>) {
 
       // El tono del encabezado no es animación: aplica siempre.
       select<HTMLElement>('[data-night]').forEach((section) => {
+        // Si la sección está fijada (pin), su recorrido real es el del
+        // pin-spacer que GSAP pone alrededor, no su propia altura.
+        const parent = section.parentElement
+        const pinned = parent?.classList.contains('pin-spacer') ? parent : null
         ScrollTrigger.create({
-          trigger: section,
+          trigger: pinned ?? section,
           start: 'top 68px',
           end: 'bottom 68px',
           onToggle: (self) => {

@@ -12,6 +12,7 @@ const sections = [
   { href: '#como-funciona', label: 'Cómo funciona' },
   { href: '#creador', label: 'Creador' },
   { href: '#logistica', label: 'Logística y QR' },
+  { href: '#salones', label: 'Salones' },
   { href: '#plantillas', label: 'Plantillas' },
 ]
 
