@@ -1,14 +1,21 @@
 # Guía del Proyecto: Plataforma Interactiva de Invitaciones y Gestión de Eventos
 
-## 🎯 Resumen del Proyecto
-Este proyecto es una aplicación web (estilo Canva) enfocada en la creación de invitaciones altamente personalizadas, animadas e interactivas, sumado a un robusto sistema de gestión de eventos. El principal diferenciador es la experiencia visual fluida y premium. 
+## 🎯 Resumen y Objetivo del Proyecto
+Plataforma SaaS y Marketplace B2B2C de gestión integral de eventos sociales e invitaciones digitales interactivas, conectando **dueños de salones/proveedores** con **anfitriones e invitados** (con enfoque de red social privada por evento).
 
-Además de la creación visual, la plataforma permite la gestión logística de los eventos: control de invitados, asignación de mesas y generación/escaneo de códigos QR para el acceso.
+El sistema cubre todo el ciclo de vida del evento:
+1. **Reservas y Marketplace de Servicios:** Agendar salones con anticipación, consultar disponibilidad y contratar servicios adicionales (*add-ons*) como renta de loza/cristalería, shows/grupos musicales, inflables, pirotecnia o banquetería, con cotización y logística conectadas.
+2. **Estudio de Invitaciones Digitales (Estilo Canva):** Editor visual por componentes preconfigurados con animaciones e interactividad, accesible mediante **URL única por invitación** (`/{slug-o-id}`) y exportable a **PDF interactivo** con enlaces clicables (ubicación en mapas y confirmación/RSVP) listo para compartir en redes sociales o WhatsApp.
+3. **Generación Asistida por Claude API (Prompt-to-JSON):** Permite que el usuario describa en lenguaje natural el estilo, tono, colores y bloques de su invitación para que Claude API genere una configuración JSON validada que el editor renderiza y permite ajustar (evitando ejecución de código arbitrario o XSS).
+4. **RSVP, Control de Pases y Logística QR:** Confirmación de asistencia indicando cantidad de personas del pase asignado, generación de código QR dinámico y validación en puerta (soporte para ingresos totales o parciales, control de aforo en tiempo real y asignación de mesas).
+5. **Capa Social y Descubrimiento:** Muro/galería colaborativa del evento para los asistentes validados, perfiles de salones/proveedores y descubrimiento orgánico de espacios y servicios.
+
+El principal diferenciador es combinar esta operación logística y social con una experiencia visual fluida, interactiva y de alta calidad.
 
 ### 👥 Roles de Usuario
-1. **Super-Admin:** Dueños del sistema con control total sobre la plataforma.
-2. **Admin:** Dueños o administradores de salones/clubes. Tienen acceso a un panel administrativo (Dashboard) modular para gestionar sus eventos en curso, invitados y analíticas.
-3. **Usuario:** Clientes finales que pueden diseñar invitaciones y agendar eventos en los diferentes salones.
+1. **Super-Admin:** Dueños del sistema con control total sobre la plataforma, catálogos globales, moderación, métricas y configuración de integraciones.
+2. **Admin:** Dueños o administradores de salones, clubes o proveedores de servicios. Gestionan disponibilidad de espacios, catálogo de *add-ons*, eventos agendados, mesas, aforo/escaneo QR y analíticas.
+3. **Usuario:** Anfitriones e invitados (público general). Los anfitriones reservan salones, contratan servicios, diseñan y publican invitaciones (manualmente o con asistencia de Claude API), descargan el PDF interactivo y monitorean confirmaciones/acceso; los invitados consultan la invitación, confirman pases (RSVP), usan su QR en acceso y participan en la dinámica social del evento.
 
 ---
 
@@ -34,26 +41,28 @@ El desarrollo debe alinearse activamente con las siguientes skills y estándares
 
 ## 🏗️ Arquitectura Modular (Por Funcionalidad) y Archivos de Barril
 
-La organización está basada en **módulos (`features`)**, ideal para escalar el proyecto. Cada módulo contiene todo el código relacionado con su funcionalidad.
+La organización está basada en **módulos (`features`)**, ideal para escalar el proyecto. Cada módulo contiene todo el código relacionado con su funcionalidad y debe mantener coherencia con las reservas, invitaciones, RSVP/QR, asistencia por Claude API y capa social del evento.
 
-### 📦 Uso Obligatorio de Archivos de Barril (`index.ts`)
-Para mantener las importaciones limpias y organizadas:
-1. Toda carpeta (componentes, hooks, utils, servicios, contextos y módulos) **DEBE** incluir un archivo `index.ts` / `index.tsx` de exportación.
-2. Las importaciones externas siempre deben realizarse apuntando al directorio o archivo de barril principal del módulo o carpeta compartida (ej. `import { Button } from '@/components/Button'`, `import { useEditor } from '@/features/Editor'`).
+> **Nota sobre la estructura:** El árbol de carpetas mostrado más abajo es **solo un ejemplo ilustrativo** de cómo organizar módulos y capas; **no es obligatorio** nombrar igual los archivos, carpetas o módulos ni replicarlo al pie de la letra. Adapta los nombres y la organización real a las necesidades de cada funcionalidad, siempre que se respete el aislamiento entre módulos, **SOLID**, las buenas prácticas y el uso de archivos de barril donde correspondan.
+
+### 📦 Uso de Archivos de Barril (`index.ts`)
+Para mantener las importaciones limpias y ordenadas:
+1. Los archivos de barril (`index.ts` / `index.tsx`) deben utilizarse en los componentes (y módulos/carpetas) donde se consumen, exponiendo su API pública de forma limpia.
+2. Al importar componentes o piezas desde otros lugares del proyecto, hazlo a través de su archivo de barril correspondiente (ej. `import { Button } from '@/components/Button'`, `import { useEditor } from '@/features/Editor'`), evitando rutas internas profundas innecesarias.
 
 ### ⚠ Regla Fundamental de Aislamiento
 **Queda estrictamente prohibido importar código directamente entre módulos (`features`).** 
 Si varios módulos necesitan compartir componentes, hooks, servicios o contextos, esa pieza de código DEBE extraerse e incluirse en las carpetas compartidas globales (`src/components`, `src/hooks`, `src/services`, `src/utils`, `src/contexts`).
 
-### Estructura de Carpetas del Proyecto:
+### Ejemplo Ilustrativo de Estructura de Carpetas (Solo Referencia):
 
 ```text
 src/
-├── components/            # Componentes compartidos globales
+├── components/            # Ejemplo de componentes compartidos globales
 │   ├── Avatar/
 │   │   ├── Avatar.tsx
 │   │   ├── Avatar.test.ts
-│   │   └── index.ts       # Archivo de barril
+│   │   └── index.ts       # Archivo de barril usado al importar el componente
 │   ├── Button/
 │   │   ├── Button.tsx
 │   │   ├── Button.test.ts
@@ -62,78 +71,50 @@ src/
 │   │   ├── TextField.tsx
 │   │   ├── TextField.test.ts
 │   │   └── index.ts
-│   └── index.ts           # Barril global de componentes
-├── contexts/              # Contextos compartidos globales
+│   └── index.ts
+├── contexts/              # Ejemplo de contextos compartidos globales
 │   ├── UserContext/
 │   │   ├── UserContext.tsx
 │   │   └── index.ts
 │   └── index.ts
-├── hooks/                 # Hooks personalizados compartidos
+├── hooks/                 # Ejemplo de hooks personalizados compartidos
 │   ├── useMediaQuery/
 │   │   ├── useMediaQuery.ts
 │   │   └── index.ts
 │   └── index.ts
-├── features/              # 📦 MÓDULOS DE LA APLICACIÓN
-│   ├── Editor/            # Creador de invitaciones estilo Canva
+├── features/              # Ejemplo de módulos por funcionalidad (nombres libres)
+│   ├── BookingAndCatalog/
+│   │   └── index.ts
+│   ├── Editor/
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── views/
-│   │   └── index.ts       # Punto de entrada público del módulo Editor
-│   ├── DashboardAdmin/    # Panel de control de salones
 │   │   └── index.ts
-│   ├── EventManagement/   # Control de invitados, mesas y escáner QR
+│   ├── DashboardAdmin/
 │   │   └── index.ts
-│   └── Home/              # Portal / Vista pública
-│       ├── components/    # Componentes exclusivos del módulo
-│       ├── utils/         # Utilidades exclusivas
-│       ├── services/      # Servicios/API exclusivos
-│       ├── hooks/         # Hooks exclusivos
-│       ├── contexts/      # Contextos y reducers exclusivos
-│       ├── views/         # Vistas internas
-│       ├── pages/         # Páginas enlazadas a React Router
-│       └── index.ts       # Punto de entrada público del módulo Home
-├── utils/                 # Utilidades/Helpers compartidos
+│   ├── EventManagement/
+│   │   └── index.ts
+│   └── Home/
+│       ├── components/
+│       ├── utils/
+│       ├── services/
+│       ├── hooks/
+│       ├── contexts/
+│       ├── views/
+│       ├── pages/
+│       └── index.ts
+├── utils/                 # Ejemplo de utilidades/helpers compartidos
 │   ├── formatters/
 │   │   ├── formatters.ts
 │   │   ├── formatters.test.ts
 │   │   └── index.ts
 │   └── index.ts
-├── services/              # Clientes de API / Servicios compartidos
+├── services/              # Ejemplo de clientes de API / servicios compartidos
 │   ├── api/
 │   │   ├── api.service.ts
 │   │   ├── api.test.ts
 │   │   └── index.ts
 │   └── index.ts
-├── App.tsx                # Componente principal y providers
-├── main.tsx               # Punto de entrada de Vite
-└── index.ts               # Exposición de puntos globales si aplica
-```
-
----
-
-## 🧠 Manejo de Estado (Context + Reducer)
-Para mantener las mejores prácticas sin librerías externas de estado:
-1. Usaremos **Context API** combinado con **`useReducer`**.
-2. **Separación de responsabilidades:** Evitar un único Contexto global masivo. Cada módulo complejo dentro de `features/` (ej. `Editor`, `EventManagement`, `Auth`) tendrá su propio Provider y Reducer interno.
-3. Se deben exportar *Custom Hooks* (ej. `useEditorState`, `useEditorDispatch`) a través del `index.ts` del propio módulo para consumir los contextos de forma segura.
-
----
-
-## ✨ Filosofía de Diseño y Animación (Skills)
-Basado en los lineamientos de diseño e ingeniería de interfaces modernas (estilo Apple / Emil Kowalski / Vercel):
-
-- **Animaciones Intencionales:** Nunca animar por animar. Usar `motion` para transiciones de UI reactivas (ej. layouts fluidos, drag & drop) y `GSAP` para secuencias complejas, scroll-triggers o animaciones del "Canvas" de la invitación.
-- **View Transitions API:** Integrar `vercel-react-view-transitions` para transiciones nativas y ultra fluidas entre páginas e interfaces de usuario.
-- **Micro-interacciones:** Cada acción (hover, click, success, error) debe tener feedback visual detallado.
-- **Transiciones de Rutas:** Se hacen con `<ViewTransition>` nativo de React (componente compartido `PageTransition`, dentro de cada página), no con `AnimatePresence`. React Router v8 ya envuelve cada navegación en `startTransition`; no usar su opción `viewTransition`. Cross-fade para navegación lateral; slides direccionales (`nav-forward`/`nav-back`) solo para navegación jerárquica (lista → detalle). `motion` queda para micro-interacciones, layout y drag & drop dentro de las páginas.
-- **Prototipado rápido y Pro UI/UX:** Usar MUI v9 como base sólida, personalizando el tema siguiendo la skill `ui-ux-pro-max-skill` para un acabado visual profesional, minimalista y elegante.
-
----
-
-## 📝 Mejores Prácticas de Frontend a Seguir
-1. **Comandos con pnpm:** Toda instalación y ejecución debe realizarse utilizando `pnpm` (ej. `pnpm install`, `pnpm dev`, `pnpm build`).
-2. **Archivos de Barril Constantes:** Crear y mantener archivos `index.ts` en todas las subcarpetas del proyecto para garantizar un patrón de importación uniforme y limpio.
-3. **Tipado Estricto:** Evitar el uso de `any`. Definir interfaces claras en TypeScript para el estado del Reducer, los Payloads de las acciones y las Props de los componentes.
-4. **Lazy Loading:** Utilizar `React.lazy` y `Suspense` en la configuración de React Router v8 para dividir el código (Code Splitting), especialmente para las páginas alojadas dentro de cada `feature/`.
-5. **Componentes Puros:** Separar la lógica (Hooks/Reducers) de la presentación (UI).
-6. **Accesibilidad (a11y):** Aprovechar las capacidades nativas de Material UI para mantener la plataforma accesible, incluso en entornos interactivos.
+├── App.tsx
+├── main.tsx
+└── index.ts
